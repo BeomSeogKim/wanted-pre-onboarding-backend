@@ -21,7 +21,7 @@ public class UserService {
     public SignupResponse signUp(SignupRequest signupRequest) {
         validateEmail(signupRequest);
         validatePassword(signupRequest);
-
+        checkEmailDuplication(signupRequest);
         String encodedPassword = passwordEncoder.encode(signupRequest.password());
         User user = User.of(signupRequest.email(), encodedPassword);
         userRepository.save(user);
@@ -37,6 +37,12 @@ public class UserService {
     private static void validatePassword(SignupRequest signupRequest) {
         if (signupRequest.password().length() < 8) {
             throw new IllegalArgumentException("비밀번호는 최소 8자 이상입니다.");
+        }
+    }
+
+    private void checkEmailDuplication(SignupRequest signupRequest) {
+        if (userRepository.findByEmail(signupRequest.email()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 Email 입니다. 다른 Email로 가입 부탁드립니다.")            ;
         }
     }
 }

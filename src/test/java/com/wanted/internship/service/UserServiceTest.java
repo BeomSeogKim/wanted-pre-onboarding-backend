@@ -67,4 +67,18 @@ class UserServiceTest {
                 .hasMessage("비밀번호는 최소 8자 이상입니다.");
     }
 
+    @Test
+    @DisplayName("이미 존재하는 Email일 경우 IllegalArgument Exception 발생")
+    void signUp_EmailDuplicate() {
+
+        // given
+        SignupRequest signupRequest = new SignupRequest("kbs4520@naver.com", "tommeo1092");
+        userService.signUp(signupRequest);
+
+        // when && then
+        assertThatThrownBy(
+                () -> userService.signUp(signupRequest)
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이미 존재하는 Email 입니다. 다른 Email로 가입 부탁드립니다.");
+    }
 }
