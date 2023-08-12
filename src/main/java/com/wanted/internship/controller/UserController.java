@@ -1,8 +1,10 @@
 package com.wanted.internship.controller;
 
+import com.wanted.internship.dto.user.LoginRequest;
 import com.wanted.internship.dto.user.SignupRequest;
 import com.wanted.internship.dto.user.SignupResponse;
 import com.wanted.internship.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +29,11 @@ public class UserController {
     public ResponseEntity<SignupResponse> signUp(@RequestBody SignupRequest signupRequest) {
         SignupResponse signupResponse = userService.signUp(signupRequest);
         return ResponseEntity.created(URI.create(url)).body(signupResponse);
+    }
+
+    @PostMapping("/login")
+    public void login(@RequestBody LoginRequest loginRequest,
+                      HttpServletResponse httpServletResponse) {
+        userService.login(loginRequest, httpServletResponse);
     }
 }

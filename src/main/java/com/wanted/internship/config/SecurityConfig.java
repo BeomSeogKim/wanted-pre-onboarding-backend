@@ -72,7 +72,9 @@ public class SecurityConfig {
         return httpSecurity
                 .authorizeHttpRequests(
                         authorize -> authorize
-                                .requestMatchers(antMatcher(HttpMethod.POST, "/api/users")).permitAll()
+                                .requestMatchers(
+                                        antMatcher(HttpMethod.POST, "/api/users"),
+                                        antMatcher(HttpMethod.POST, "/api/users/login")).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .build();
