@@ -38,3 +38,4 @@ out/
 
 ### Credential ###
 src/main/resources/application-credentials.yaml
+src/test/resources/application-credentials.yaml

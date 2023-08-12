@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    default: test
+    active: test
+    include: credentials
+
+url:
+  host: localhost:8080
+
+

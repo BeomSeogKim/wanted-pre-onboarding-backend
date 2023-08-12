@@ -3,6 +3,14 @@ spring:
     default: dev
     active: dev
     include: credentials
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+
 url:
   host: localhost:8080
 
