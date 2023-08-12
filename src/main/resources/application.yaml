@@ -1,0 +1,9 @@
+spring:
+  profiles:
+    default: dev
+    active: dev
+    include: credentials
+url:
+  host: localhost:8080
+
+
