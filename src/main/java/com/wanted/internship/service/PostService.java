@@ -83,7 +83,20 @@ public class PostService {
 
     private void checkAuthorizationOfPost(Post post, User user) {
         if (!post.getUser().equals(user)) {
-            throw new IllegalArgumentException("게시글의 작성자만 해당 게시글을 수정할 수 있습니다.");
+            throw new IllegalArgumentException("해당 게시글에 대한 권한이 없습니다.");
         }
+    }
+
+    @Transactional
+    public void deletePost(HttpServletRequest httpServletRequest, Long postId) {
+        Post post = checkPostIdAndGetPost(postId);
+
+        String email = tokenProvider.getAuthentication(httpServletRequest).getName();
+        checkAuthentication(email);
+        User user = getUser(email);
+
+        checkAuthorizationOfPost(post, user);
+
+        postRepository.delete(post);
     }
 }

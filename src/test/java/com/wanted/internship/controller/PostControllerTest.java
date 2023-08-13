@@ -235,6 +235,63 @@ class PostControllerTest extends RestDocsSupport {
         assertThat(findPost.getContent()).isEqualTo("this is a content for a test");
     }
 
+    @Test
+    @DisplayName("게시글 삭제")
+    void deletePost() throws Exception {
+
+        // given
+        String email = "kbs4520@naver.com", password = "password1234";
+
+        String accessToken = login(email, password);
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        Post post = Post.of("this is a content for a test", user);
+        Post savedPost = postRepository.save(post);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                delete("/api/posts/" + savedPost.getId())
+                        .header("Authorization", accessToken)
+        );
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+        assertThat(postRepository.findAll().size()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 권한이 없는 경우 삭제가 불가하다.")
+    void deletePost_NoAuthorization() throws Exception {
+
+        // given
+        String email1 = "kbs4520@naver.com", password1 = "password1234";
+        String email2 = "kbs@naver.com", password2 = "password1234";
+
+        login(email1, password1);
+        String accessToken = login(email2, password2);
+        User user = userRepository.findByEmail(email1).orElseThrow();
+
+        Post post = Post.of("this is a content for a test", user);
+        Post savedPost = postRepository.save(post);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                patch("/api/posts/" + savedPost.getId())
+                        .header("Authorization", accessToken)
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+        assertThat(postRepository.findAll().size()).isEqualTo(1);
+    }
     private String login(String email, String password) throws Exception {
         SignupRequest signupRequest = new SignupRequest(email, password);
         userService.signUp(signupRequest);

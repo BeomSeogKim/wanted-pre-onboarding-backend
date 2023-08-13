@@ -57,4 +57,12 @@ public class PostController {
         return ResponseEntity.ok().body(postEditResponse);
     }
 
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<PostDeleteResponse> deletePost(
+            HttpServletRequest httpServletRequest,
+            @PathVariable Long postId
+    ) {
+        postService.deletePost(httpServletRequest, postId);
+        return ResponseEntity.ok().body(PostDeleteResponse.of("성공적으로 삭제를 완료했습니다."));
+    }
 }
