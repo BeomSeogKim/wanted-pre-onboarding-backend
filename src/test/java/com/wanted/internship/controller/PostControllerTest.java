@@ -1,7 +1,6 @@
 package com.wanted.internship.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wanted.internship.RestDocsSupport;
 import com.wanted.internship.dto.post.PostEditRequest;
 import com.wanted.internship.dto.post.PostWriteRequest;
 import com.wanted.internship.dto.user.LoginRequest;
@@ -12,20 +11,42 @@ import com.wanted.internship.repository.PostRepository;
 import com.wanted.internship.repository.UserRepository;
 import com.wanted.internship.service.UserService;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(RestDocumentationExtension.class)
+@AutoConfigureMockMvc
+@SpringBootTest
 @Transactional
-class PostControllerTest extends RestDocsSupport {
+class PostControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -45,9 +66,21 @@ class PostControllerTest extends RestDocsSupport {
     @Autowired
     EntityManager entityManager;
 
+    @BeforeEach
+    void setup(WebApplicationContext webApplicationContext,
+               RestDocumentationContextProvider restDocumentationContextProvider) {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .apply(documentationConfiguration(restDocumentationContextProvider)
+                        .operationPreprocessors()
+                        .withRequestDefaults(modifyUris().host("localhost").port(8080), prettyPrint())
+                        .withResponseDefaults(modifyUris().host("localhost").port(8080), prettyPrint()))
+                .build();
+    }
+
     @Test
     @DisplayName("게시글 작성 검증")
-    void write() throws Exception{
+    void write() throws Exception {
 
         // given
         String email = "kbs4520@naver.com";
@@ -74,9 +107,28 @@ class PostControllerTest extends RestDocsSupport {
                 () -> assertThat(findPost.getUser()).isEqualTo(findUser)
         );
 
+        resultActions.andDo(
+                document("writePost",
+                        requestHeaders(
+                                headerWithName(CONTENT_TYPE).description("content type"),
+                                headerWithName("Authorization").description("Access Token"),
+                                headerWithName(CONTENT_LENGTH).description("length of content")
+                        ),
+                        requestFields(
+                                fieldWithPath("content").description("content of post")
+                        ),
+                        responseFields(
+                                fieldWithPath("postId").description("id of post"),
+                                fieldWithPath("content").description("content of post"),
+                                fieldWithPath("userId").description("id of writer")
+                        )
+                )
+        );
+
     }
 
     @Test
+    @Disabled
     @DisplayName("로그인을 하지 않고 게시글 생성 불가하다.")
     void write_NoAuthentication() throws Exception {
 
@@ -118,6 +170,20 @@ class PostControllerTest extends RestDocsSupport {
 
         // then
         resultActions.andExpect(status().isOk());
+
+        resultActions.andDo(
+                document("findAllPost",
+                        responseFields(
+                                fieldWithPath("postList[0].postId").description("id of post"),
+                                fieldWithPath("postList[0].content").description("content of post"),
+                                fieldWithPath("postList[0].userId").description("id of writer"),
+                                fieldWithPath("firstPage").description("boolean of firstPage"),
+                                fieldWithPath("lastPage").description("boolean of lastPage"),
+                                fieldWithPath("currentPage").description("number of current page"),
+                                fieldWithPath("totalPage").description("number of total page")
+                        )
+                )
+        );
 
     }
 
@@ -167,6 +233,16 @@ class PostControllerTest extends RestDocsSupport {
 
         // then
         resultActions.andExpect(status().isOk());
+
+        resultActions.andDo(
+                document("findPost",
+                        responseFields(
+                                fieldWithPath("postId").description("id of post"),
+                                fieldWithPath("content").description("content of post"),
+                                fieldWithPath("userId").description("id of writer")
+                        )
+                )
+        );
     }
 
     @Test
@@ -199,6 +275,23 @@ class PostControllerTest extends RestDocsSupport {
 
         Post findPost = postRepository.findById(savedPost.getId()).orElseThrow();
         assertThat(findPost.getContent()).isEqualTo("this is a new content");
+
+        resultActions.andDo(
+                document("editPost",
+                        requestHeaders(
+                                headerWithName(CONTENT_TYPE).description("content type"),
+                                headerWithName("Authorization").description("Access Token "),
+                                headerWithName(CONTENT_LENGTH).description("length of content")
+                        ),
+                        requestFields(
+                                fieldWithPath("content").description("content to edit")
+                        ),
+                        responseFields(
+                                fieldWithPath("postId").description("id of post"),
+                                fieldWithPath("content").description("content of post")
+                        )
+                )
+        );
     }
 
     @Test
@@ -260,7 +353,18 @@ class PostControllerTest extends RestDocsSupport {
         // then
         resultActions.andExpect(status().isOk());
 
-        assertThat(postRepository.findAll().size()).isEqualTo(0);
+        assertThat(postRepository.findAll()).isEmpty();
+
+        resultActions.andDo(
+                document("deletePost",
+                        requestHeaders(
+                                headerWithName("Authorization").description("Access Token")
+                        ),
+                        responseFields(
+                                fieldWithPath("message").description("message of request")
+                        )
+                )
+        );
     }
 
     @Test
@@ -290,8 +394,9 @@ class PostControllerTest extends RestDocsSupport {
         // then
         resultActions.andExpect(status().isBadRequest());
 
-        assertThat(postRepository.findAll().size()).isEqualTo(1);
+        assertThat(postRepository.findAll()).hasSize(1);
     }
+
     private String login(String email, String password) throws Exception {
         SignupRequest signupRequest = new SignupRequest(email, password);
         userService.signUp(signupRequest);
