@@ -77,7 +77,7 @@ public class SecurityConfig {
                                         antMatcher(HttpMethod.POST, "/api/users/login")
                                 ).permitAll()
                                 .requestMatchers(
-                                        antMatcher(HttpMethod.GET, "/api/posts")
+                                        antMatcher(HttpMethod.GET, "/api/posts/**")
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )

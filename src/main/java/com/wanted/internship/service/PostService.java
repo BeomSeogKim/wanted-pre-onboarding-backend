@@ -1,5 +1,6 @@
 package com.wanted.internship.service;
 
+import com.wanted.internship.dto.post.PostReadResponse;
 import com.wanted.internship.dto.post.PostReadResponses;
 import com.wanted.internship.dto.post.PostWriteRequest;
 import com.wanted.internship.dto.post.PostWriteResponse;
@@ -53,5 +54,18 @@ public class PostService {
         Page<Post> postPage = postRepository.findAll(pageable);
 
         return PostReadResponses.of(postPage);
+    }
+
+    public PostReadResponse findById(Long postId) {
+        Post post = checkPostIdAndGetPost(postId);
+
+        return PostReadResponse.of(post);
+    }
+
+    private Post checkPostIdAndGetPost(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("해당 게시글은 존재하지 않습니다. 다시한번 확인해주세요.")
+                );
     }
 }

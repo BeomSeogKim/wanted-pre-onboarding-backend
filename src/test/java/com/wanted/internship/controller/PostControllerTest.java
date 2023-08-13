@@ -10,6 +10,7 @@ import com.wanted.internship.entity.User;
 import com.wanted.internship.repository.PostRepository;
 import com.wanted.internship.repository.UserRepository;
 import com.wanted.internship.service.UserService;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,9 @@ class PostControllerTest extends RestDocsSupport {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    EntityManager entityManager;
 
     @Test
     @DisplayName("게시글 작성 검증")
@@ -139,6 +143,30 @@ class PostControllerTest extends RestDocsSupport {
         // then
         resultActions.andExpect(status().isOk());
 
+    }
+
+    @Test
+    @DisplayName("게시글 단건 조회")
+    void findById() throws Exception {
+
+        // given
+        String email = "kbs4520@naver.com", password = "password1234";
+        login(email, password);
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        Post post = Post.of("this is a content for a test", user);
+        Post savedPost = postRepository.save(post);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                get("/api/posts/" + savedPost.getId())
+        );
+
+        // then
+        resultActions.andExpect(status().isOk());
     }
 
     private String login(String email, String password) throws Exception {

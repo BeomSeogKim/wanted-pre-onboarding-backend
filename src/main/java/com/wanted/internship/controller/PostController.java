@@ -1,5 +1,6 @@
 package com.wanted.internship.controller;
 
+import com.wanted.internship.dto.post.PostReadResponse;
 import com.wanted.internship.dto.post.PostReadResponses;
 import com.wanted.internship.dto.post.PostWriteRequest;
 import com.wanted.internship.dto.post.PostWriteResponse;
@@ -39,5 +40,13 @@ public class PostController {
     ) {
         PostReadResponses postReadResponses = postService.findAll(pageable);
         return ResponseEntity.ok().body(postReadResponses);
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostReadResponse> findById(
+            @PathVariable Long postId
+    ) {
+        PostReadResponse postReadResponse = postService.findById(postId);
+        return ResponseEntity.ok().body(postReadResponse);
     }
 }
