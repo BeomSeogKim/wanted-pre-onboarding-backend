@@ -1,9 +1,6 @@
 package com.wanted.internship.controller;
 
-import com.wanted.internship.dto.post.PostReadResponse;
-import com.wanted.internship.dto.post.PostReadResponses;
-import com.wanted.internship.dto.post.PostWriteRequest;
-import com.wanted.internship.dto.post.PostWriteResponse;
+import com.wanted.internship.dto.post.*;
 import com.wanted.internship.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -49,4 +46,15 @@ public class PostController {
         PostReadResponse postReadResponse = postService.findById(postId);
         return ResponseEntity.ok().body(postReadResponse);
     }
+
+    @PatchMapping("/{postId}")
+    public ResponseEntity<PostEditResponse> editPost(
+            HttpServletRequest httpServletRequest,
+            @PathVariable Long postId,
+            @RequestBody PostEditRequest postEditRequest
+    ) {
+        PostEditResponse postEditResponse = postService.editPost(httpServletRequest, postId, postEditRequest);
+        return ResponseEntity.ok().body(postEditResponse);
+    }
+
 }

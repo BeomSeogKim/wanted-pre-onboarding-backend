@@ -2,6 +2,7 @@ package com.wanted.internship.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wanted.internship.RestDocsSupport;
+import com.wanted.internship.dto.post.PostEditRequest;
 import com.wanted.internship.dto.post.PostWriteRequest;
 import com.wanted.internship.dto.user.LoginRequest;
 import com.wanted.internship.dto.user.SignupRequest;
@@ -20,8 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
@@ -167,6 +167,72 @@ class PostControllerTest extends RestDocsSupport {
 
         // then
         resultActions.andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("게시글 수정")
+    void editPost() throws Exception {
+
+        // given
+        String email = "kbs4520@naver.com", password = "password1234";
+
+        String accessToken = login(email, password);
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        Post post = Post.of("this is a content for a test", user);
+        Post savedPost = postRepository.save(post);
+        PostEditRequest postEditRequest = new PostEditRequest("this is a new content");
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                patch("/api/posts/" + savedPost.getId())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(postEditRequest))
+                        .header("Authorization", accessToken)
+        );
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+        Post findPost = postRepository.findById(savedPost.getId()).orElseThrow();
+        assertThat(findPost.getContent()).isEqualTo("this is a new content");
+    }
+
+    @Test
+    @DisplayName("게시글 수정 - 권한이 없는 경우 수정이 불가하다.")
+    void editPost_NoAuthorization() throws Exception {
+
+        // given
+        String email1 = "kbs4520@naver.com", password1 = "password1234";
+        String email2 = "kbs@naver.com", password2 = "password1234";
+
+        login(email1, password1);
+        String accessToken = login(email2, password2);
+        User user = userRepository.findByEmail(email1).orElseThrow();
+
+        Post post = Post.of("this is a content for a test", user);
+        Post savedPost = postRepository.save(post);
+        PostEditRequest postEditRequest = new PostEditRequest("this is a new content");
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                patch("/api/posts/" + savedPost.getId())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(postEditRequest))
+                        .header("Authorization", accessToken)
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+        Post findPost = postRepository.findById(savedPost.getId()).orElseThrow();
+        assertThat(findPost.getContent()).isEqualTo("this is a content for a test");
     }
 
     private String login(String email, String password) throws Exception {

@@ -1,9 +1,6 @@
 package com.wanted.internship.service;
 
-import com.wanted.internship.dto.post.PostReadResponse;
-import com.wanted.internship.dto.post.PostReadResponses;
-import com.wanted.internship.dto.post.PostWriteRequest;
-import com.wanted.internship.dto.post.PostWriteResponse;
+import com.wanted.internship.dto.post.*;
 import com.wanted.internship.entity.Post;
 import com.wanted.internship.entity.User;
 import com.wanted.internship.repository.PostRepository;
@@ -67,5 +64,26 @@ public class PostService {
                 .orElseThrow(
                         () -> new IllegalArgumentException("해당 게시글은 존재하지 않습니다. 다시한번 확인해주세요.")
                 );
+    }
+
+    @Transactional
+    public PostEditResponse editPost(HttpServletRequest httpServletRequest, Long postId, PostEditRequest postEditRequest) {
+        Post post = checkPostIdAndGetPost(postId);
+
+        String email = tokenProvider.getAuthentication(httpServletRequest).getName();
+        checkAuthentication(email);
+        User user = getUser(email);
+
+        checkAuthorizationOfPost(post, user);
+
+        post.update(postEditRequest);
+
+        return PostEditResponse.of(post);
+    }
+
+    private void checkAuthorizationOfPost(Post post, User user) {
+        if (!post.getUser().equals(user)) {
+            throw new IllegalArgumentException("게시글의 작성자만 해당 게시글을 수정할 수 있습니다.");
+        }
     }
 }

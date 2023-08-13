@@ -1,5 +1,6 @@
 package com.wanted.internship.entity;
 
+import com.wanted.internship.dto.post.PostEditRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -32,5 +33,9 @@ public class Post {
 
     public static Post of(String content, User user) {
         return new Post(content, user);
+    }
+
+    public void update(PostEditRequest postEditRequest) {
+        this.content = postEditRequest.content();
     }
 }
