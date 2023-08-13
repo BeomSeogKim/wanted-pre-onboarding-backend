@@ -1,5 +1,6 @@
 package com.wanted.internship.service;
 
+import com.wanted.internship.dto.post.PostReadResponses;
 import com.wanted.internship.dto.post.PostWriteRequest;
 import com.wanted.internship.dto.post.PostWriteResponse;
 import com.wanted.internship.entity.Post;
@@ -9,6 +10,8 @@ import com.wanted.internship.repository.UserRepository;
 import com.wanted.internship.security.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,5 +47,11 @@ public class PostService {
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new UsernameNotFoundException("다시 로그인 부탁드립니다.")
         );
+    }
+
+    public PostReadResponses findAll(Pageable pageable) {
+        Page<Post> postPage = postRepository.findAll(pageable);
+
+        return PostReadResponses.of(postPage);
     }
 }

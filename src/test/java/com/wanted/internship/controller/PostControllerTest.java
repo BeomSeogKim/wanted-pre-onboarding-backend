@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -88,6 +89,56 @@ class PostControllerTest extends RestDocsSupport {
 
         // then
         resultActions.andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("게시글 전체 조회")
+    void findAll() throws Exception {
+
+        // given
+        String email = "kbs4520@naver.com", password = "password1234";
+        String accessToken = login(email, password);
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        for (int i = 0; i < 20; i++) {
+            Post post = Post.of("content " + (i + 1), user);
+            postRepository.save(post);
+        }
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                get("/api/posts")
+                        .header("Authorization", accessToken)
+        );
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+    }
+
+    @Test
+    @DisplayName("게시글 전체 조회의 경우 회원이 아니어도 된다.")
+    void findAll_NoAuthentication() throws Exception {
+
+        // given
+        String email = "kbs4520@naver.com", password = "password1234";
+        login(email, password);
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        for (int i = 0; i < 20; i++) {
+            Post post = Post.of("content " + (i + 1), user);
+            postRepository.save(post);
+        }
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                get("/api/posts")
+        );
+
+        // then
+        resultActions.andExpect(status().isOk());
+
     }
 
     private String login(String email, String password) throws Exception {
