@@ -3,6 +3,7 @@ package com.wanted.internship.exception;
 import com.wanted.internship.dto.exception.CustomErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -39,4 +40,10 @@ public class CustomExceptionHandler {
                 .body(CustomErrorResponse.of(noAuthorityException));
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<CustomErrorResponse> handleException(MethodArgumentNotValidException methodArgumentNotValidException) {
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .body(CustomErrorResponse.of(methodArgumentNotValidException));
+    }
 }

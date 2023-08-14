@@ -4,6 +4,7 @@ import com.wanted.internship.exception.NoAuthenticationException;
 import com.wanted.internship.exception.NoAuthorityException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 public record CustomErrorResponse(
         int status,
@@ -55,6 +56,14 @@ public record CustomErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
                 "noAuthorityException",
                 noAuthorityException.getMessage()
+        );
+    }
+
+    public static CustomErrorResponse of(MethodArgumentNotValidException methodArgumentNotValidException) {
+        return new CustomErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "methodArgumentNotValidException",
+                methodArgumentNotValidException.getFieldError().getDefaultMessage()
         );
     }
 }

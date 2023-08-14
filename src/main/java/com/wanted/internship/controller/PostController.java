@@ -51,7 +51,7 @@ public class PostController {
     public ResponseEntity<PostEditResponse> editPost(
             HttpServletRequest httpServletRequest,
             @PathVariable Long postId,
-            @RequestBody PostEditRequest postEditRequest
+            @RequestBody @Valid PostEditRequest postEditRequest
     ) {
         PostEditResponse postEditResponse = postService.editPost(httpServletRequest, postId, postEditRequest);
         return ResponseEntity.ok().body(postEditResponse);
