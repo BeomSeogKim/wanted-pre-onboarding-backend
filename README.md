@@ -43,7 +43,10 @@ java -jar internship-0.0.1-SNAPSHOT.jar
 
 ### ERD
 
-![image-20230813131534969](images/ERDpng.png)
+![image-20230813131534969](images/ERD.png)
+
+### API 명세서
+[index.html](src%2Fmain%2Fresources%2Fstatic%2Fdocs%2Findex.html)
 
 ### 구현 방법 및 이유
 
@@ -112,4 +115,16 @@ java -jar internship-0.0.1-SNAPSHOT.jar
 > 마지막으로 Post의 작성자와 요청을 한 사용자가 같은 유저인지 확인을 합니다. 
 >
 > 그 후 게시글을 삭제한 후 상태코드 200으로 응답했습니다.
+
+### API 외 개발 구현 사항 
+#### 테스트 코드 작성
+> 기능 개발한 코드들의 검증을 위해 Service 및 Controller 코드에 테스트 코드를 추가하였습니다.  
+추가적으로 API 명세서 개발을 위해 RestDocs와 Ascii를 사용해 API 명세서를 작성했습니다.
+
+#### Docker compose를 이용한 MySQL 구성 설정 
+> 다른 로컬에서도 동일하게 어플리케이션을 사용할 수 있도록 docker compose를 사용했습니다. 
+
+#### 기밀사항 Yaml 분리
+> `spring.profiles.include` 기능을 사용해 보안과 관련된 사항들이 포함된 파일들을 분리하여 관리했습니다.  
+> **평가자의 로컬에서 동일한 실행을 위해 마지막에 github에 파일이 추적되도록 했습니다.**
 
