@@ -3,6 +3,8 @@ package com.wanted.internship.service;
 import com.wanted.internship.dto.post.*;
 import com.wanted.internship.entity.Post;
 import com.wanted.internship.entity.User;
+import com.wanted.internship.exception.NoAuthenticationException;
+import com.wanted.internship.exception.NoAuthorityException;
 import com.wanted.internship.repository.PostRepository;
 import com.wanted.internship.repository.UserRepository;
 import com.wanted.internship.security.TokenProvider;
@@ -10,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +29,11 @@ public class PostService {
 
     @Transactional
     public PostWriteResponse write(HttpServletRequest httpServletRequest, PostWriteRequest postWriteRequest) {
-        String email = tokenProvider.getAuthentication(httpServletRequest).getName();
+        Authentication authentication = tokenProvider.getAuthentication(httpServletRequest);
+        if (authentication == null) {
+            throw new NoAuthenticationException("해당 권한이 유효하지 않습니다. 재 로그인 해주세요");
+        }
+        String email = authentication.getName();
         checkAuthentication(email);
         User user = getUser(email);
 
@@ -83,7 +90,7 @@ public class PostService {
 
     private void checkAuthorizationOfPost(Post post, User user) {
         if (!post.getUser().equals(user)) {
-            throw new IllegalArgumentException("해당 게시글에 대한 권한이 없습니다.");
+            throw new NoAuthorityException("해당 게시글에 대한 권한이 없습니다.");
         }
     }
 

@@ -12,7 +12,6 @@ import com.wanted.internship.repository.UserRepository;
 import com.wanted.internship.service.UserService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -128,7 +127,6 @@ class PostControllerTest {
     }
 
     @Test
-    @Disabled
     @DisplayName("로그인을 하지 않고 게시글 생성 불가하다.")
     void write_NoAuthentication() throws Exception {
 
@@ -322,7 +320,7 @@ class PostControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isForbidden());
 
         Post findPost = postRepository.findById(savedPost.getId()).orElseThrow();
         assertThat(findPost.getContent()).isEqualTo("this is a content for a test");
