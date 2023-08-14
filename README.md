@@ -1,5 +1,6 @@
 # Pre-Onboarding Backend 사전 과제
->name : 김범석
+>name : 김범석  
+>demo 영상 링크 : [영상 바로가기](https://youtu.be/6Hn77CKswpY)
 
 ## 애플리케이션 실행 방법
 
